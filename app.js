@@ -2,7 +2,7 @@ const express = require('express');
 const { result } = require('lodash');
 const mongoose = require('mongoose');
 const morgan = require('morgan');
-const Blog = require('./models/blog')
+const blogRoutes = require('./routes/blogRoutes')
 
 // create express app
 const app = express();
@@ -25,6 +25,7 @@ app.set('view engine', 'ejs');
 // });
 
 app.use(express.static('public'))
+app.use(express.urlencoded({ extended: true }));
 app.use(morgan('dev'));
 
 mongoose.connect(dbURI, { useNewUrlParser: true, useUnifiedTopology: true})
@@ -74,20 +75,10 @@ app.get('/', (req, res) => {
     res.redirect('/blogs');
 });
 
-app.get('/blogs', (req, res) => {
-    Blog.find().sort({ updatedAt: -1})
-    .then((result) => {
-        res.render('index', { title: 'All blog', blogs: result})
-    })
-    .catch((err) => console.log(err));
-})
+app.use('/blogs', blogRoutes);
 
 app.get('/about', (req, res) => {
     res.render('about', { title: 'About'});
-});
-
-app.get('/blogs/create', (req, res) => {
-    res.render('create', { title: 'Create'});
 });
 
 app.use((req, res) => {
